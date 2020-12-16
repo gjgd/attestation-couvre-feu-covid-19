@@ -1,0 +1,10 @@
+name: attestation-couvre-feu
+org: gjgdserverless
+component: website
+
+inputs:
+  domain: attestation-couvre-feu.gjgd.xyz
+  src:
+    src: ./src
+    hook: npm run build:dev
+    dist: ./dist
