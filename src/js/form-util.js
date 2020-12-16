@@ -1,5 +1,4 @@
 import removeAccents from 'remove-accents'
-
 import { $, $$, downloadBlob } from './dom-utils'
 import { addSlash, getFormattedDate } from './util'
 import pdfBase from '../certificate.pdf'
@@ -59,9 +58,10 @@ function validateAriaFields () {
     .includes(true)
 }
 
-function updateSecureLS (formInputs) {
+function updateSecureLS (formInputs, reasonInputs) {
   if (wantDataToBeStored() === true) {
     secureLS.set('profile', getProfile(formInputs))
+    secureLS.set('reason', getReasonsObject(reasonInputs))
   } else {
     clearSecureLS()
   }
@@ -77,9 +77,13 @@ function clearForm () {
   storeDataInput.checked = false
 }
 
-function setCurrentDate (releaseDateInput) {
+function setCurrentDate (releaseDateInput, releaseTimeInput) {
   const currentDate = new Date()
   releaseDateInput.value = getFormattedDate(currentDate)
+  releaseTimeInput.value = currentDate.toLocaleTimeString('fr-FR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 }
 
 function showSnackbar (snackbarToShow, showDuration = 6000) {
@@ -128,19 +132,54 @@ export function getProfile (formInputs) {
 
 export function getReasons (reasonInputs) {
   const reasons = reasonInputs
-    .filter(input => input.checked)
-    .map(input => input.value).join(', ')
+    .filter((input) => input.checked)
+    .map((input) => input.value)
+    .join(', ')
   return reasons
 }
 
-export function prepareInputs (formInputs, reasonInputs, reasonFieldset, reasonAlert, snackbar, releaseDateInput) {
+export function getReasonsObject (reasonInputs) {
+  return reasonInputs
+    .filter((reason) => reason.checked)
+    .reduce((map, reason) => {
+      map[reason.value] = reason.checked
+      return map
+    }, {})
+}
+
+export function prepareInputs (
+  formInputs,
+  reasonInputs,
+  reasonFieldset,
+  reasonAlert,
+  snackbar,
+  releaseDateInput,
+  releaseTimeInput,
+) {
   const lsProfile = secureLS.get('profile')
+  const lsReason = secureLS.get('reason')
+  const currentDate = new Date()
+  const formattedDate = getFormattedDate(currentDate)
+  const formattedTime = currentDate.toLocaleTimeString('fr-FR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 
   // Continue to store data if already stored
-  storeDataInput.checked = !!lsProfile
+  storeDataInput.checked = lsReason || lsProfile
   formInputs.forEach((input) => {
-    if (input.name && lsProfile && input.name !== 'datesortie' && input.name !== 'heuresortie' && input.name !== 'field-reason') {
-      input.value = lsProfile[input.name]
+    switch (input.name) {
+      case 'datesortie':
+        input.value = formattedDate
+        break
+      case 'heuresortie':
+        input.value = formattedTime
+        break
+      case 'field-reason':
+        if (lsReason) input.checked = lsReason[input.value]
+        break
+      default:
+        if (lsProfile) input.value = lsProfile[input.name]
     }
     const exempleElt = input.parentNode.parentNode.querySelector('.exemple')
     if (input.placeholder && exempleElt) {
@@ -164,9 +203,9 @@ export function prepareInputs (formInputs, reasonInputs, reasonFieldset, reasonA
     }
   })
 
-  reasonInputs.forEach(radioInput => {
+  reasonInputs.forEach((radioInput) => {
     radioInput.addEventListener('change', function (event) {
-      const isInError = reasonInputs.every(input => !input.checked)
+      const isInError = reasonInputs.every((input) => !input.checked)
       reasonFieldset.classList.toggle('fieldset-error', isInError)
       reasonAlert.classList.toggle('hidden', !isInError)
     })
@@ -174,11 +213,8 @@ export function prepareInputs (formInputs, reasonInputs, reasonFieldset, reasonA
   $('#cleardata').addEventListener('click', () => {
     clearSecureLS()
     clearForm()
-    setCurrentDate(releaseDateInput)
+    setCurrentDate(releaseDateInput, releaseTimeInput)
     showSnackbar(clearDataSnackbar, 3000)
-  })
-  $('#field-storedata').addEventListener('click', () => {
-    updateSecureLS(formInputs)
   })
   $('#generate-btn').addEventListener('click', async (event) => {
     event.preventDefault()
@@ -195,7 +231,7 @@ export function prepareInputs (formInputs, reasonInputs, reasonFieldset, reasonA
     if (invalid) {
       return
     }
-    updateSecureLS(formInputs)
+    updateSecureLS(formInputs, reasonInputs)
     const pdfBlob = await generatePdf(getProfile(formInputs), reasons, pdfBase)
 
     const creationInstant = new Date()
@@ -216,6 +252,15 @@ export function prepareForm () {
   const reasonFieldset = $('#reason-fieldset')
   const reasonAlert = reasonFieldset.querySelector('.msg-alert')
   const releaseDateInput = $('#field-datesortie')
+  const releaseTimeInput = $('#field-heuresortie')
   setReleaseDateTime(releaseDateInput)
-  prepareInputs(formInputs, reasonInputs, reasonFieldset, reasonAlert, snackbar, releaseDateInput)
+  prepareInputs(
+    formInputs,
+    reasonInputs,
+    reasonFieldset,
+    reasonAlert,
+    snackbar,
+    releaseDateInput,
+    releaseTimeInput,
+  )
 }

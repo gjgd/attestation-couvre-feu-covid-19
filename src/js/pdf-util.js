@@ -13,12 +13,6 @@ const ys = {
 }
 
 export async function generatePdf (profile, reasons, pdfBase) {
-  const creationInstant = new Date()
-  const creationDate = creationInstant.toLocaleDateString('fr-FR')
-  const creationHour = creationInstant
-    .toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-    .replace(':', 'h')
-
   const {
     lastname,
     firstname,
@@ -30,6 +24,13 @@ export async function generatePdf (profile, reasons, pdfBase) {
     datesortie,
     heuresortie,
   } = profile
+
+  // Disable creation date "tracking"
+  // const creationInstant = new Date()
+  // const creationDate = creationInstant.toLocaleDateString('fr-FR')
+  // const creationHour = creationInstant
+  const creationDate = datesortie
+  const creationHour = heuresortie.replace(':', 'h')
 
   const data = [
     `Cree le: ${creationDate} a ${creationHour}`,
@@ -74,11 +75,9 @@ export async function generatePdf (profile, reasons, pdfBase) {
   drawText(placeofbirth, 312, 645)
   drawText(`${address} ${zipcode} ${city}`, 133, 625)
 
-  reasons
-    .split(', ')
-    .forEach(reason => {
-      drawText('x', 73, ys[reason], 12)
-    })
+  reasons.split(', ').forEach((reason) => {
+    drawText('x', 73, ys[reason], 12)
+  })
 
   let locationSize = getIdealFontSize(font, profile.city, 83, 7, 11)
 
@@ -110,7 +109,14 @@ export async function generatePdf (profile, reasons, pdfBase) {
 
   const qrImage = await pdfDoc.embedPng(generatedQR)
 
-  page1.drawText(qrTitle1 + '\n' + qrTitle2, { x: 440, y: 230, size: 6, font, lineHeight: 10, color: rgb(1, 1, 1) })
+  page1.drawText(qrTitle1 + '\n' + qrTitle2, {
+    x: 440,
+    y: 230,
+    size: 6,
+    font,
+    lineHeight: 10,
+    color: rgb(1, 1, 1),
+  })
 
   page1.drawImage(qrImage, {
     x: page1.getWidth() - 156,
@@ -121,7 +127,13 @@ export async function generatePdf (profile, reasons, pdfBase) {
 
   pdfDoc.addPage()
   const page2 = pdfDoc.getPages()[1]
-  page2.drawText(qrTitle1 + qrTitle2, { x: 50, y: page2.getHeight() - 40, size: 11, font, color: rgb(1, 1, 1) })
+  page2.drawText(qrTitle1 + qrTitle2, {
+    x: 50,
+    y: page2.getHeight() - 40,
+    size: 11,
+    font,
+    color: rgb(1, 1, 1),
+  })
   page2.drawImage(qrImage, {
     x: 50,
     y: page2.getHeight() - 350,
