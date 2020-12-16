@@ -30,10 +30,7 @@ export async function generatePdf (profile, reasons, pdfBase) {
   // const creationDate = creationInstant.toLocaleDateString('fr-FR')
   // const creationHour = creationInstant
   const creationDate = datesortie
-  const creationHour = heuresortie
-    .replace(':', 'h')
-    .toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
-    .replace(':', 'h')
+  const creationHour = heuresortie.replace(':', 'h')
 
   const data = [
     `Cree le: ${creationDate} a ${creationHour}`,
