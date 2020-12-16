@@ -14,4 +14,4 @@ createForm()
 prepareForm()
 addVersion(process.env.VERSION)
 
-console.log(`Current git commit ${process.env.GIT_COMMIT}`);
+console.log(`Current git commit ${process.env.GIT_COMMIT}`)

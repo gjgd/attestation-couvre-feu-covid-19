@@ -128,18 +128,32 @@ export function getProfile (formInputs) {
 
 export function getReasons (reasonInputs) {
   const reasons = reasonInputs
-    .filter(input => input.checked)
-    .map(input => input.value).join(', ')
+    .filter((input) => input.checked)
+    .map((input) => input.value)
+    .join(', ')
   return reasons
 }
 
-export function prepareInputs (formInputs, reasonInputs, reasonFieldset, reasonAlert, snackbar, releaseDateInput) {
+export function prepareInputs (
+  formInputs,
+  reasonInputs,
+  reasonFieldset,
+  reasonAlert,
+  snackbar,
+  releaseDateInput,
+) {
   const lsProfile = secureLS.get('profile')
 
   // Continue to store data if already stored
   storeDataInput.checked = !!lsProfile
   formInputs.forEach((input) => {
-    if (input.name && lsProfile && input.name !== 'datesortie' && input.name !== 'heuresortie' && input.name !== 'field-reason') {
+    if (
+      input.name &&
+      lsProfile &&
+      input.name !== 'datesortie' &&
+      input.name !== 'heuresortie' &&
+      input.name !== 'field-reason'
+    ) {
       input.value = lsProfile[input.name]
     }
     const exempleElt = input.parentNode.parentNode.querySelector('.exemple')
@@ -164,9 +178,9 @@ export function prepareInputs (formInputs, reasonInputs, reasonFieldset, reasonA
     }
   })
 
-  reasonInputs.forEach(radioInput => {
+  reasonInputs.forEach((radioInput) => {
     radioInput.addEventListener('change', function (event) {
-      const isInError = reasonInputs.every(input => !input.checked)
+      const isInError = reasonInputs.every((input) => !input.checked)
       reasonFieldset.classList.toggle('fieldset-error', isInError)
       reasonAlert.classList.toggle('hidden', !isInError)
     })
@@ -217,5 +231,12 @@ export function prepareForm () {
   const reasonAlert = reasonFieldset.querySelector('.msg-alert')
   const releaseDateInput = $('#field-datesortie')
   setReleaseDateTime(releaseDateInput)
-  prepareInputs(formInputs, reasonInputs, reasonFieldset, reasonAlert, snackbar, releaseDateInput)
+  prepareInputs(
+    formInputs,
+    reasonInputs,
+    reasonFieldset,
+    reasonAlert,
+    snackbar,
+    releaseDateInput,
+  )
 }
