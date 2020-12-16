@@ -160,7 +160,10 @@ export function prepareInputs (
   const lsReason = secureLS.get('reason')
   const currentDate = new Date()
   const formattedDate = getFormattedDate(currentDate)
-  const formattedTime = currentDate.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+  const formattedTime = currentDate.toLocaleTimeString('fr-FR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
 
   // Continue to store data if already stored
   storeDataInput.checked = lsReason || lsProfile
